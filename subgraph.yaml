@@ -1,0 +1,50 @@
+specVersion: 0.0.1
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Controller
+    network: goerli
+    source:
+      address: "0xB6d123953E292f9f25abd795F5faE53fB4e1e5d2"
+      abi: Controller
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Deposited
+        - FeeManagerChanged
+        - FeesChanged
+        - OwnerChanged
+        - PoolManagerChanged
+        - PoolShutDown
+        - SystemShutdown
+        - TreasuryChanged
+        - VoteDelegateChanged
+        - Withdrawn
+      abis:
+        - name: Controller
+          file: ./abis/Controller.json
+      eventHandlers:
+        - event: Deposited(indexed address,indexed uint256,uint256)
+          handler: handleDeposited
+        - event: FeeManagerChanged(address)
+          handler: handleFeeManagerChanged
+        - event: FeesChanged(uint256,uint256)
+          handler: handleFeesChanged
+        - event: OwnerChanged(address)
+          handler: handleOwnerChanged
+        - event: PoolManagerChanged(address)
+          handler: handlePoolManagerChanged
+        - event: PoolShutDown(uint256)
+          handler: handlePoolShutDown
+        - event: SystemShutdown()
+          handler: handleSystemShutdown
+        - event: TreasuryChanged(address)
+          handler: handleTreasuryChanged
+        - event: VoteDelegateChanged(address)
+          handler: handleVoteDelegateChanged
+        - event: Withdrawn(indexed address,indexed uint256,uint256)
+          handler: handleWithdrawn
+      file: ./src/controller.ts
