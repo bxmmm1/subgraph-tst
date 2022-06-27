@@ -2,6 +2,9 @@
   "goerli": {
     "Controller": {
       "address": "0xB6d123953E292f9f25abd795F5faE53fB4e1e5d2"
+    },
+    "VoterProxy": {
+      "address": "0x1d456b852d4e9b2496eeab3ae4d98d6e220c5b6f"
     }
   }
 }

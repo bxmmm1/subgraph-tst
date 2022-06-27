@@ -1,6 +1,6 @@
 specVersion: 0.0.4
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: Controller
@@ -17,11 +17,11 @@ dataSources:
         - PoolShutDown
       abis:
         - name: Controller
-          file: ./abis/Controller.json
+          file: Controller/abis/Controller.json
       eventHandlers:
         - event: Deposited(indexed address,indexed uint256,uint256)
           handler: handleDeposited
       callHandlers:
         - function: addPool(address,address)
           handler: handleAddPool
-      file: ./src/controller.ts
+      file: Controller/Controller.wasm
