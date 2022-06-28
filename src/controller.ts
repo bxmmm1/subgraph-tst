@@ -1,12 +1,13 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 import {
   AddPoolCall,
   Controller,
+  Controller__poolInfoResult,
   Deposited,
   PoolShutDown,
 } from "../generated/Controller/Controller"
 import { BalancerPool } from "../generated/Controller/BalancerPool";
-import { Pool, User } from "../generated/schema"
+import { Investment, Pool, User } from "../generated/schema"
 
 export function handlePoolShutdown(event: PoolShutDown): void {
   const pool = new Pool(event.params._pid.toHexString());
@@ -15,21 +16,30 @@ export function handlePoolShutdown(event: PoolShutDown): void {
 }
 
 export function handleDeposited(event: Deposited): void {
-  const poolId = event.params.poolid.toHexString()
+  const poolId = event.params.poolid
   const userId = event.transaction.from.toHexString()
 
-  let userPools = <string[]> []
-  // User might not exist (first deposit)
+  const investmentId = `${event.params.poolid.toHexString()}_${event.params.amount.toHexString()}_${userId}`
+
+  // if no user, create user
   let user = User.load(userId)
-  if (user == null) {
+  if (!user) {
     user = new User(userId)
-  } else {
-    userPools = <string[]> user.pools
+    user.save()
   }
-  
-  userPools.push(poolId)
-  user.pools = userPools
-  user.save()
+
+  const poolInfo = getPoolInfo(poolId, <Address> event.transaction.to)
+  const balancerPool = BalancerPool.bind(poolInfo.getLptoken())
+  const balancerPoolId = balancerPool.getPoolId()
+
+  const investment = new Investment(investmentId)
+  investment.user = userId
+  investment.pool = balancerPoolId.toHexString()
+  investment.amount = event.params.amount
+  investment.timestamp = event.block.timestamp
+  investment.blockNumber = event.block.number
+  investment.txHash = event.transaction.hash
+  investment.save()
 }
 
 export function handleAddPool(call: AddPoolCall): void {
@@ -53,4 +63,10 @@ export function handleAddPool(call: AddPoolCall): void {
   pool.stash = poolInfo.getStash()
   pool.shutdown = poolInfo.getShutdown()
   pool.save()
+}
+
+function getPoolInfo(pid: BigInt, controllerAddress: Address): Controller__poolInfoResult {
+  const controller = Controller.bind(controllerAddress)
+  const poolInfo = controller.poolInfo(pid)
+  return poolInfo
 }

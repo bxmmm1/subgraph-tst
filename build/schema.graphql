@@ -9,7 +9,22 @@ type Pool @entity {
   shutdown: Boolean!
 }
 
+type Investment @entity {
+  id: ID!
+  user: User!
+  pool: Pool!
+  amount: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+}
+
 type User @entity {
   id: ID!
-  pools: [Pool!]
+  investments: [Investment!]
 }
+
+# type User @entity {
+#   id: ID!
+#   pools: [Pool!]
+# }

@@ -106,6 +106,92 @@ export class Pool extends Entity {
   }
 }
 
+export class Investment extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Investment entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Investment must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Investment", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Investment | null {
+    return changetype<Investment | null>(store.get("Investment", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get user(): string {
+    let value = this.get("user");
+    return value!.toString();
+  }
+
+  set user(value: string) {
+    this.set("user", Value.fromString(value));
+  }
+
+  get pool(): string {
+    let value = this.get("pool");
+    return value!.toString();
+  }
+
+  set pool(value: string) {
+    this.set("pool", Value.fromString(value));
+  }
+
+  get amount(): BigInt {
+    let value = this.get("amount");
+    return value!.toBigInt();
+  }
+
+  set amount(value: BigInt) {
+    this.set("amount", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    return value!.toBigInt();
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+
+  get txHash(): Bytes {
+    let value = this.get("txHash");
+    return value!.toBytes();
+  }
+
+  set txHash(value: Bytes) {
+    this.set("txHash", Value.fromBytes(value));
+  }
+}
+
 export class User extends Entity {
   constructor(id: string) {
     super();
@@ -137,8 +223,8 @@ export class User extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get pools(): Array<string> | null {
-    let value = this.get("pools");
+  get investments(): Array<string> | null {
+    let value = this.get("investments");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
@@ -146,11 +232,11 @@ export class User extends Entity {
     }
   }
 
-  set pools(value: Array<string> | null) {
+  set investments(value: Array<string> | null) {
     if (!value) {
-      this.unset("pools");
+      this.unset("investments");
     } else {
-      this.set("pools", Value.fromStringArray(<Array<string>>value));
+      this.set("investments", Value.fromStringArray(<Array<string>>value));
     }
   }
 }
