@@ -5,6 +5,7 @@ import {
   Deposited,
   PoolShutDown,
 } from "../generated/Controller/Controller"
+import { BalancerPool } from "../generated/Controller/BalancerPool";
 import { Pool, User } from "../generated/schema"
 
 export function handlePoolShutdown(event: PoolShutDown): void {
@@ -37,9 +38,13 @@ export function handleAddPool(call: AddPoolCall): void {
   const poolLength = controller.poolLength()
   const pid = BigInt.fromI32(poolLength.toI32() - 1)
   const poolInfo = controller.poolInfo(pid)
+  
+  // query blockchain to get poolId, and use that as our own id
+  const balancer = BalancerPool.bind(poolInfo.getLptoken())
+  const balancerPoolId = balancer.getPoolId()
 
   // save pool entity 
-  const pool = new Pool(pid.toHexString());
+  const pool = new Pool(balancerPoolId.toHexString());
   pool.pid = pid;
   pool.lpToken = poolInfo.getLptoken()
   pool.token = poolInfo.getToken()

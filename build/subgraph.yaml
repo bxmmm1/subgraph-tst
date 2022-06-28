@@ -18,6 +18,8 @@ dataSources:
       abis:
         - name: Controller
           file: Controller/abis/Controller.json
+        - name: BalancerPool
+          file: Controller/abis/BalancerPool.json
       eventHandlers:
         - event: Deposited(indexed address,indexed uint256,uint256)
           handler: handleDeposited
