@@ -6,7 +6,7 @@ dataSources:
     name: Controller
     network: goerli
     source:
-      address: "0xB6d123953E292f9f25abd795F5faE53fB4e1e5d2"
+      address: "0x4D0b160307f2D93029d0A16a075875Ef581A4616"
       abi: Controller
       startBlock: 7115160
     mapping:
@@ -21,9 +21,47 @@ dataSources:
         - name: BalancerPool
           file: ./abis/BalancerPool.json
       eventHandlers:
-        - event: Deposited(indexed address,indexed uint256,uint256)
+        - event: Deposited(address,uint256,uint256,bool)
           handler: handleDeposited
-      callHandlers:
-        - function: addPool(address,address)
+        - event: AddedPool(uint256,address,address,address,address,address)
           handler: handleAddPool
       file: ./src/controller.ts
+  - kind: ethereum
+    name: RewardFactory
+    network: goerli
+    source:
+      address: "0xE898be0010bbA0c000C295865A3b5d9B0E1C8975"
+      abi: RewardFactory
+      startBlock: 7115160
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BaseRewardPoolCreated
+      abis:
+        - name: RewardFactory
+          file: ./abis/RewardFactory.json
+      eventHandlers:
+        - event: BaseRewardPoolCreated(address)
+          handler: handlePoolCreated
+      file: ./src/rewardFactory.ts
+templates:
+  - kind: ethereum
+    name: BaseRewardPool
+    network: goerli
+    source:
+      abi: BaseRewardPool
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/baseRewardPool.ts
+      entities:
+        - BaseRewardPool
+      abis:
+        - name: BaseRewardPool
+          file: ./abis/BaseRewardPool.json
+      eventHandlers:
+        - event: Withdrawn(indexed address,uint256)
+          handler: handleWithdrawn

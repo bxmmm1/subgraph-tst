@@ -14,9 +14,7 @@ type Investment @entity {
   user: User!
   pool: Pool!
   amount: BigInt!
-  timestamp: BigInt!
-  blockNumber: BigInt!
-  txHash: Bytes!
+  lastUpdated: BigInt!
 }
 
 type User @entity {
@@ -24,7 +22,6 @@ type User @entity {
   investments: [Investment!]
 }
 
-# type User @entity {
-#   id: ID!
-#   pools: [Pool!]
-# }
+type BaseRewardPool @entity {
+  id: ID!
+}
