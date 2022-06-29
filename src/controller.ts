@@ -19,7 +19,7 @@ export function handleDeposited(event: Deposited): void {
   const poolId = event.params.poolid
   const userId = event.transaction.from.toHexString()
 
-  const investmentId = `${event.params.poolid.toHexString()}_${event.params.amount.toHexString()}_${userId}`
+  const investmentId = `${event.params.poolid.toHexString()}_${event.params.amount.toHexString()}_${event.transaction.hash.toHexString()}`
 
   // if no user, create user
   let user = User.load(userId)
