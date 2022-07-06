@@ -1,12 +1,8 @@
-import { BigInt } from "@graphprotocol/graph-ts"
-import {
-  AddPoolCall,
-  Controller,
-  Deposited,
-  PoolShutDown,
-} from "../generated/Controller/Controller"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { BalancerPool } from "../generated/Controller/BalancerPool";
-import { Pool, User } from "../generated/schema"
+import { Investment, Pool, User } from "../generated/schema"
+import { getInvestmentId } from "./helpers";
+import { AddedPool, Deposited, PoolShutDown, Controller, Controller__poolInfoResult } from "../generated/Controller/Controller"
 
 export function handlePoolShutdown(event: PoolShutDown): void {
   const pool = new Pool(event.params._pid.toHexString());
@@ -15,42 +11,62 @@ export function handlePoolShutdown(event: PoolShutDown): void {
 }
 
 export function handleDeposited(event: Deposited): void {
-  const poolId = event.params.poolid.toHexString()
+  // If the user deposited, but did not stake his d2d tokens
+  // do nothing
+  if (! event.params._stake) return;
+  const poolId = event.params._pid
   const userId = event.transaction.from.toHexString()
 
-  let userPools = <string[]> []
-  // User might not exist (first deposit)
+  const poolInfo = getPoolInfo(poolId, <Address> event.transaction.to)
+  const balancerPool = BalancerPool.bind(poolInfo.getLptoken())
+  const balancerPoolId = balancerPool.getPoolId()
+  
+  // if no user, create user
   let user = User.load(userId)
-  if (user == null) {
+  if (!user) {
     user = new User(userId)
+    user.save()
+  }
+
+  // When somebody does first time deposit we create a new investment
+  // If he stakes his tokens, we update this investment to keep track of everything
+  const investmentId = getInvestmentId(poolInfo.getBalRewards(), event.transaction.from)
+
+  let investment = Investment.load(investmentId)
+  if (!investment) {
+    // If we don't have investment, create investment
+    investment = new Investment(investmentId)
+    investment.user = userId
+    investment.amount = event.params._amount
+    investment.pool = balancerPoolId.toHexString()
   } else {
-    userPools = <string[]> user.pools
+    // he is depositing more, update the amount
+    investment.amount = investment.amount.plus(event.params._amount)
   }
   
-  userPools.push(poolId)
-  user.pools = userPools
-  user.save()
+  investment.lastUpdated = event.block.timestamp
+  investment.save()
 }
 
-export function handleAddPool(call: AddPoolCall): void {
-  // Query blockchain to getPool length, so that we can parse last added pool by calling poolInfo
-  const controller = Controller.bind(call.to)
-  const poolLength = controller.poolLength()
-  const pid = BigInt.fromI32(poolLength.toI32() - 1)
-  const poolInfo = controller.poolInfo(pid)
-  
+export function handleAddPool(event: AddedPool): void {  
   // query blockchain to get poolId, and use that as our own id
-  const balancer = BalancerPool.bind(poolInfo.getLptoken())
+  const balancer = BalancerPool.bind(event.params._lpToken)
   const balancerPoolId = balancer.getPoolId()
 
   // save pool entity 
   const pool = new Pool(balancerPoolId.toHexString());
-  pool.pid = pid;
-  pool.lpToken = poolInfo.getLptoken()
-  pool.token = poolInfo.getToken()
-  pool.gauge = poolInfo.getGauge()
-  pool.balRewards = poolInfo.getBalRewards()
-  pool.stash = poolInfo.getStash()
-  pool.shutdown = poolInfo.getShutdown()
+  pool.pid = event.params._pid;
+  pool.lpToken = event.params._lpToken
+  pool.token = event.params._token
+  pool.gauge = event.params._gauge
+  pool.balRewards = event.params._baseRewardsPool
+  pool.stash = event.params._stash
+  pool.shutdown = false
   pool.save()
+}
+
+function getPoolInfo(pid: BigInt, controllerAddress: Address): Controller__poolInfoResult {
+  const controller = Controller.bind(controllerAddress)
+  const poolInfo = controller.poolInfo(pid)
+  return poolInfo
 }

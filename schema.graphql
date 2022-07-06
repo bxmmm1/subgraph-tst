@@ -9,7 +9,19 @@ type Pool @entity {
   shutdown: Boolean!
 }
 
+type Investment @entity {
+  id: ID!
+  user: User!
+  pool: Pool!
+  amount: BigInt!
+  lastUpdated: BigInt!
+}
+
 type User @entity {
   id: ID!
-  pools: [Pool!]
+  investments: [Investment!]
+}
+
+type BaseRewardPool @entity {
+  id: ID!
 }

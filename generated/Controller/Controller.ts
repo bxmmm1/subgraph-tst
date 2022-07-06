@@ -10,6 +10,44 @@ import {
   BigInt
 } from "@graphprotocol/graph-ts";
 
+export class AddedPool extends ethereum.Event {
+  get params(): AddedPool__Params {
+    return new AddedPool__Params(this);
+  }
+}
+
+export class AddedPool__Params {
+  _event: AddedPool;
+
+  constructor(event: AddedPool) {
+    this._event = event;
+  }
+
+  get _pid(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get _lpToken(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get _token(): Address {
+    return this._event.parameters[2].value.toAddress();
+  }
+
+  get _gauge(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+
+  get _baseRewardsPool(): Address {
+    return this._event.parameters[4].value.toAddress();
+  }
+
+  get _stash(): Address {
+    return this._event.parameters[5].value.toAddress();
+  }
+}
+
 export class Deposited extends ethereum.Event {
   get params(): Deposited__Params {
     return new Deposited__Params(this);
@@ -23,16 +61,20 @@ export class Deposited__Params {
     this._event = event;
   }
 
-  get user(): Address {
+  get _user(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get poolid(): BigInt {
+  get _pid(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get amount(): BigInt {
+  get _amount(): BigInt {
     return this._event.parameters[2].value.toBigInt();
+  }
+
+  get _stake(): boolean {
+    return this._event.parameters[3].value.toBoolean();
   }
 }
 
@@ -193,15 +235,15 @@ export class Withdrawn__Params {
     this._event = event;
   }
 
-  get user(): Address {
+  get _user(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get poolid(): BigInt {
+  get _pid(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get amount(): BigInt {
+  get _amount(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 }
